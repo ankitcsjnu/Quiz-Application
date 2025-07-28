@@ -1,21 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quiz Application</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <div class="app">
-    <h1>Current Affairs Quiz</h1>
-    <div class="quiz">
-      <h2 id="question">Question</h2>
-      <div id="answer-buttons"></div>
-      <p id="timer">Time left: <span id="time">20</span>s</p>
-      <button id="next-btn">Next</button>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-graduation-cap"></i> Student Performance Tracker</h1>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <span class="stat-number" id="total-students">0</span>
+                        <span class="stat-label">Students</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="avg-grade">0</span>
+                        <span class="stat-label">Avg Grade</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="dashboard">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </button>
+            <button class="tab-btn" data-tab="students">
+                <i class="fas fa-users"></i> Students
+            </button>
+            <button class="tab-btn" data-tab="grades">
+                <i class="fas fa-clipboard-list"></i> Grades
+            </button>
+            <button class="tab-btn" data-tab="analytics">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </button>
+        </nav>
+
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3><i class="fas fa-trophy"></i> Top Performers</h3>
+                    <div id="top-performers" class="top-performers">
+                        <p class="empty-state">No students added yet</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-chart-pie"></i> Grade Distribution</h3>
+                    <canvas id="gradeChart" width="300" height="200"></canvas>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-trending-up"></i> Performance Trends</h3>
+                    <canvas id="trendChart" width="300" height="200"></canvas>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Students at Risk</h3>
+                    <div id="at-risk-students" class="at-risk-list">
+                        <p class="empty-state">No students at risk</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Tab -->
+        <div class="tab-content" id="students">
+            <div class="section-header">
+                <h2>Student Management</h2>
+                <button class="btn btn-primary" id="add-student-btn">
+                    <i class="fas fa-plus"></i> Add Student
+                </button>
+            </div>
+            
+            <div class="search-filter">
+                <input type="text" id="student-search" placeholder="Search students..." class="search-input">
+                <select id="class-filter" class="filter-select">
+                    <option value="">All Classes</option>
+                </select>
+            </div>
+            
+            <div class="students-grid" id="students-list">
+                <p class="empty-state">No students added yet. Click "Add Student" to get started!</p>
+            </div>
+        </div>
+
+        <!-- Grades Tab -->
+        <div class="tab-content" id="grades">
+            <div class="section-header">
+                <h2>Grade Management</h2>
+                <button class="btn btn-primary" id="add-grade-btn">
+                    <i class="fas fa-plus"></i> Add Grade
+                </button>
+            </div>
+            
+            <div class="grades-table-container">
+                <table class="grades-table" id="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Subject</th>
+                            <th>Grade</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="empty-row">
+                            <td colspan="6">No grades recorded yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="analytics">
+            <div class="analytics-grid">
+                <div class="card">
+                    <h3><i class="fas fa-chart-line"></i> Subject Performance</h3>
+                    <canvas id="subjectChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-calendar-alt"></i> Monthly Progress</h3>
+                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="card performance-metrics">
+                    <h3><i class="fas fa-calculator"></i> Performance Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="metric-value" id="highest-grade">-</span>
+                            <span class="metric-label">Highest Grade</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="lowest-grade">-</span>
+                            <span class="metric-label">Lowest Grade</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="pass-rate">-</span>
+                            <span class="metric-label">Pass Rate</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-value" id="improvement-rate">-</span>
+                            <span class="metric-label">Improvement</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <script src="script.js"></script>
+
+    <!-- Modals -->
+    <!-- Add Student Modal -->
+    <div class="modal" id="student-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="student-modal-title">Add Student</h3>
+                <button class="close-btn" data-modal="student-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="student-form">
+                <div class="form-group">
+                    <label for="student-name">Full Name *</label>
+                    <input type="text" id="student-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-id">Student ID *</label>
+                    <input type="text" id="student-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-email">Email</label>
+                    <input type="email" id="student-email">
+                </div>
+                <div class="form-group">
+                    <label for="student-class">Class *</label>
+                    <input type="text" id="student-class" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-phone">Phone</label>
+                    <input type="tel" id="student-phone">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-modal="student-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Grade Modal -->
+    <div class="modal" id="grade-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Grade</h3>
+                <button class="close-btn" data-modal="grade-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="grade-form">
+                <div class="form-group">
+                    <label for="grade-student">Student *</label>
+                    <select id="grade-student" required>
+                        <option value="">Select Student</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="grade-subject">Subject *</label>
+                    <input type="text" id="grade-subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="grade-value">Grade *</label>
+                    <input type="number" id="grade-value" min="0" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="grade-type">Type *</label>
+                    <select id="grade-type" required>
+                        <option value="">Select Type</option>
+                        <option value="exam">Exam</option>
+                        <option value="quiz">Quiz</option>
+                        <option value="assignment">Assignment</option>
+                        <option value="project">Project</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="grade-date">Date *</label>
+                    <input type="date" id="grade-date" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" data-modal="grade-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Grade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Action</h3>
+                <button class="close-btn" data-modal="confirm-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-modal="confirm-modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-action">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
